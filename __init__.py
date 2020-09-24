@@ -13,7 +13,7 @@ class Yeelight(MycroftSkill):
 
     def initialize(self):
         bulb_ip = self.settings.get('bulb_ip', "192.168.0.129")
-        bulb = Bulb(bulb_ip)
+        bulb = Bulb(bulb_ip, auto_on=True)
 
         yeelight_on_intent = IntentBuilder('OnIntent').require('lightKeyword').require('onKeyword').build()
         self.register_intent(yeelight_on_intent, self.handle_yeelight_on_intent)
@@ -54,10 +54,23 @@ class Yeelight(MycroftSkill):
         bulb.set_color_temp(1700)
         bulb.set_brightness(1, duration=effect_delay)
 
+    @intent_file_handler('brightness.intent')
     def handle_yeelight_brightness_intent(self, message):
-        brightness = message.data.get('brightness')
+        brightness = int(message.data.get('brightness'))
         self.speak_dialog('yeelight.brightness')
         bulb.set_brightness(brightness, duration=effect_delay)
+
+    @intent_file_handler('colortemp.intent')
+    def handle_yeelight_colortemp_intent(self, message):
+        temp = message.data.get('temp')
+        if temp == 'cold':
+            temp = 5700
+        elif temp == 'warm':
+            temp = 2300
+        else:
+            temp = int(temp)
+        self.speak_dialog('yeelight.colortemp')
+        bulb.set_color_temp(temp, duration=effect_delay)
 
 def stop(self):
     pass
